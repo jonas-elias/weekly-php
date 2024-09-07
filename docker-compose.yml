@@ -1,0 +1,25 @@
+version: "3"
+
+name: weekly
+
+services:
+  semantic-search:
+    build:
+      context: "./"
+      dockerfile: "Dockerfile"
+    tty: true
+    volumes:
+      - ./:/opt/www
+    ports:
+      - 9502:9502
+    depends_on:
+      - qdrant
+    environment:
+      - SCAN_CACHEABLE=false
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    volumes:
+      - ./qdrant_data:/qdrant/storage
