@@ -28,11 +28,11 @@ class DownloadEmbeddingModel extends HyperfCommand
 
     public function handle()
     {
-        $this->line('Download start!', 'info');
+        $this->line('Download started!', 'info');
         Transformers::setup()
             ->apply();
         // pipeline('feature-extraction', 'Xenova/bert-base-uncased');
         pipeline('embeddings', 'Xenova/all-MiniLM-L6-v2');
-        $this->line('Download finish!', 'info');
+        $this->line('Download finished!', 'info');
     }
 }

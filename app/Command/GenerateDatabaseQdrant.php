@@ -52,11 +52,12 @@ class GenerateDatabaseQdrant extends HyperfCommand
         $collections = new Collections($client);
         $collections->createCollection('collection', new VectorParams(384, Distance::COSINE));
 
+        $points = new Points($client);
+        $points->setWait(true);
+
         foreach ($this->data as $key => $value) {
             $embedding = $extractor($value, normalize: true, pooling: 'mean');
 
-            $points = new Points($client);
-            $points->setWait(true);
             $points->upsertPoints('collection', [
                 new PointStruct(
                     new ExtendedPointId($key + 10000),
