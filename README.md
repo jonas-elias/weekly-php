@@ -16,6 +16,11 @@ Acessando o serviço:
 docker exec -it $containerID /bin/bash
 ```
 
+Instalação dos vendors:
+```shell
+composer install
+```
+
 Realizando o download do modelo neural:
 ```shell
 php bin/hyperf.php download:embedding
