@@ -45,6 +45,3 @@ WORKDIR /opt/www
 COPY . /opt/www
 
 EXPOSE 9502
-
-# CMD ["/bin/bash"]
-# ENTRYPOINT ["sh", "/opt/www/startup.sh"]
