@@ -44,3 +44,7 @@ Testando a busca semântica:
 ```shell
 curl --location 'http://localhost:9502/search?q=Input%20semantic%20search'
 ```
+
+### Referências
+
+- https://dev.to/jonas-elias/gerando-embeddings-com-php-e-onnx-44gk
