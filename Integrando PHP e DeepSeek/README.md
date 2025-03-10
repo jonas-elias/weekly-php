@@ -39,7 +39,7 @@ php bin/hyperf.php start
 
 http://localhost:9502/search
 
-Testando a busca semântica:
+Testando a geração de texto:
 ```shell
 curl --location 'http://localhost:9502/search'
 ```
