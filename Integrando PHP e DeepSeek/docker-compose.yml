@@ -1,0 +1,16 @@
+version: "3"
+
+name: weekly
+
+services:
+  deep-seek-php:
+    build:
+      context: "./"
+      dockerfile: "Dockerfile"
+    tty: true
+    volumes:
+      - ./:/opt/www
+    ports:
+      - 9502:9502
+    environment:
+      - SCAN_CACHEABLE=false
