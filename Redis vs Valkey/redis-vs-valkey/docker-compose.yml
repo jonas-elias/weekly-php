@@ -1,0 +1,186 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:8.0.3
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: [
+      "redis-server",
+      "--maxclients", "10000",
+      "--protected-mode", "no",
+      "--appendonly", "no",
+      "--save", "",
+      "--io-threads", "4",
+      "--io-threads-do-reads", "yes"
+    ]
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
+        reservations:
+          cpus: "1.0"
+          memory: 256M
+    networks:
+      - bubble
+
+  valkey:
+    image: valkey/valkey:latest
+    container_name: valkey
+    command: [
+      "valkey-server",
+      "--maxclients", "10000",
+      "--protected-mode", "no",
+      "--appendonly", "no",
+      "--save", "",
+      "--io-threads", "4",
+      "--io-threads-do-reads", "yes"
+    ]
+    ports:
+      - "6380:6379"
+    volumes:
+      - valkey-data:/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
+        reservations:
+          cpus: "1.0"
+          memory: 256M
+    networks:
+      - bubble
+
+  redis-client:
+    container_name: redis-client
+    build: .
+    depends_on:
+      - redis
+      - valkey
+      - prometheus
+    environment:
+      REDIS_HOST: "redis"
+      MIN_CLIENTS: 800
+      MAX_CLIENTS: 1000
+      STAGE_INTERVAL: 15
+      REQUEST_DELAY_MS: 200
+      APP_NAME: "redis-client"
+    labels:
+      com.example.role: redis
+    ports:
+      - "9505:9501"
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 3G
+        reservations:
+          cpus: "4.0"
+          memory: 3G
+    networks:
+      - bubble
+
+  valkey-client:
+    container_name: valkey-client
+    build: .
+    depends_on:
+      - redis
+      - valkey
+      - prometheus
+    ports:
+      - "9506:9501"
+    environment:
+      REDIS_HOST: "valkey"
+      MIN_CLIENTS: 800
+      MAX_CLIENTS: 1000
+      STAGE_INTERVAL: 15
+      REQUEST_DELAY_MS: 200
+      APP_NAME: "valkey-client"
+    labels:
+      com.example.role: valkey
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 3G
+        reservations:
+          cpus: "4.0"
+          memory: 3G
+    networks:
+      - bubble
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+      - "9091:9091"
+    networks:
+      - bubble
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "3000" ]
+    networks:
+      - bubble
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.61.0
+    container_name: redis-exporter
+    environment:
+      REDIS_ADDR: "redis:6379"
+    ports:
+      - "9121:9121"
+    depends_on:
+      - redis
+    networks:
+      - bubble
+
+  valkey-exporter:
+    image: oliver006/redis_exporter:v1.61.0
+    container_name: valkey-exporter
+    environment:
+      REDIS_ADDR: "valkey:6379"
+    ports:
+      - "9122:9121"
+    depends_on:
+      - valkey
+    networks:
+      - bubble
+
+volumes:
+  redis-data:
+  valkey-data:
+  prometheus_data: {}
+  grafana_data: {}
+
+networks:
+  bubble:
+    driver: bridge
+  mon-net:
+    driver: bridge

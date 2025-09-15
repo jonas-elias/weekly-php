@@ -1,0 +1,37 @@
+# my global config
+global:
+  scrape_interval:     15s # By default, scrape targets every 15 seconds.
+  evaluation_interval: 15s # By default, scrape targets every 15 seconds.
+  external_labels:
+      monitor: 'my-project'
+
+scrape_configs:
+
+  - job_name: 'prometheus'
+
+    scrape_interval: 15s
+
+    static_configs:
+         - targets: ['localhost:9090']
+
+  - job_name: redis-client
+    static_configs:
+      - targets:
+          - redis-client:9502
+        labels:
+          container_role: "redis"
+
+  - job_name: valkey-client
+    static_configs:
+      - targets:
+          - valkey-client:9502
+        labels:
+          container_role: "valkey"
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+
+  - job_name: 'valkey'
+    static_configs:
+      - targets: ['valkey-exporter:9121']
